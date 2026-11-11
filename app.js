@@ -7,6 +7,7 @@ if (!Array.isArray(window.RINCON_PRODUCTS)) {
 }
 
 const products = window.RINCON_PRODUCTS;
+const shirtSizes = ["S", "M", "L", "XL", "Niño"];
 
 function readStoredArray(key, fallback) {
   try {
@@ -20,7 +21,33 @@ function readStoredArray(key, fallback) {
   }
 }
 
-let cart = readStoredArray(CART_KEY, []);
+function normalizeCart(items) {
+  const normalized = new Map();
+  items.forEach((item) => {
+    if (!item || typeof item !== "object") return;
+    const productId = item.productId || item.id;
+    const product = products.find((candidate) => candidate.id === productId);
+    const quantity = Math.floor(Number(item.quantity));
+    if (!product || !Number.isFinite(quantity) || quantity <= 0) return;
+    const size = shirtSizes.includes(item.size) ? item.size : "";
+    const key = `${product.id}::${size || "pendiente"}`;
+    const existing = normalized.get(key);
+    if (existing) {
+      existing.quantity += quantity;
+      return;
+    }
+    normalized.set(key, {
+      productId: product.id,
+      size,
+      name: product.name,
+      image: product.image,
+      quantity,
+    });
+  });
+  return [...normalized.values()];
+}
+
+let cart = normalizeCart(readStoredArray(CART_KEY, []));
 let currentFilter = "Todas";
 let searchQuery = "";
 
@@ -55,7 +82,7 @@ function filteredProducts() {
   return products.filter((product) => {
     const matchesCategory = currentFilter === "Todas"
       || (currentFilter === "Otros" ? product.category === "Otros" : product.category === currentFilter);
-    const matchesSearch = !query || `${product.name} ${product.team}`.toLocaleLowerCase("es").includes(query);
+    const matchesSearch = !query || `${product.name} ${product.team} ${product.player}`.toLocaleLowerCase("es").includes(query);
     return matchesCategory && matchesSearch;
   });
 }
@@ -70,6 +97,7 @@ function renderProducts() {
       </div>
       <div class="product-info">
         <div class="product-info-heading"><div><span class="product-team">${escapeHtml(product.team)}</span><h3>${escapeHtml(product.name)}</h3></div><strong class="product-price">$25</strong></div>
+        <p class="product-player-name">ESTAMPADO <strong>${escapeHtml(product.player)}</strong></p>
         <div class="product-order">
           <label class="product-size-picker"><span>TALLA</span><select class="product-size" aria-label="Talla para ${escapeHtml(product.name)}"><option value="" selected disabled>Elige talla</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="Niño">Niño</option></select></label>
           <button class="quick-add" type="button" data-add-product="${escapeHtml(product.id)}">＋ Añadir</button>
@@ -98,7 +126,7 @@ function renderCart() {
   document.querySelector("#cart-items").innerHTML = cart.map((item) => `
     <article class="cart-item">
       <img src="${escapeHtml(item.image)}" alt="" />
-      <div class="cart-item-info"><strong>${escapeHtml(item.name)}</strong><small>${currency.format(PRICE)} · ${item.size ? `Talla ${escapeHtml(item.size)}` : "Elige la talla"}</small><label class="cart-size-picker"><span>Talla</span><select data-cart-size="${escapeHtml(cartItemKey(item))}" aria-label="Talla para ${escapeHtml(item.name)}"><option value="" ${item.size ? "" : "selected"}>Elige...</option><option value="S" ${item.size === "S" ? "selected" : ""}>S</option><option value="M" ${item.size === "M" ? "selected" : ""}>M</option><option value="L" ${item.size === "L" ? "selected" : ""}>L</option><option value="XL" ${item.size === "XL" ? "selected" : ""}>XL</option><option value="Niño" ${item.size === "Niño" ? "selected" : ""}>Niño</option></select></label><div class="quantity-control"><button type="button" data-cart-change="${escapeHtml(cartItemKey(item))}" data-amount="-1" aria-label="Quitar una unidad">−</button><span>${item.quantity}</span><button type="button" data-cart-change="${escapeHtml(cartItemKey(item))}" data-amount="1" aria-label="Agregar una unidad">+</button></div></div>
+      <div class="cart-item-info"><strong>${escapeHtml(item.name)}</strong><small>Estampado: ${escapeHtml(products.find((product) => product.id === item.productId).player)} · ${currency.format(PRICE)}</small><label class="cart-size-picker"><span>Talla</span><select data-cart-size="${escapeHtml(cartItemKey(item))}" aria-label="Talla para ${escapeHtml(item.name)}"><option value="" ${item.size ? "" : "selected"}>Elige...</option><option value="S" ${item.size === "S" ? "selected" : ""}>S</option><option value="M" ${item.size === "M" ? "selected" : ""}>M</option><option value="L" ${item.size === "L" ? "selected" : ""}>L</option><option value="XL" ${item.size === "XL" ? "selected" : ""}>XL</option><option value="Niño" ${item.size === "Niño" ? "selected" : ""}>Niño</option></select></label><div class="quantity-control"><button type="button" data-cart-change="${escapeHtml(cartItemKey(item))}" data-amount="-1" aria-label="Quitar una unidad">−</button><span>${item.quantity}</span><button type="button" data-cart-change="${escapeHtml(cartItemKey(item))}" data-amount="1" aria-label="Agregar una unidad">+</button></div></div>
       <button class="remove-cart-item" type="button" data-cart-remove="${escapeHtml(cartItemKey(item))}" aria-label="Eliminar ${escapeHtml(item.name)}">×</button>
     </article>
   `).join("");
@@ -184,8 +212,7 @@ document.querySelector("#cart-items").addEventListener("change", (event) => {
   if (!item) return;
   item.size = sizePicker.value;
   const matchingItem = cart.find((candidate) => candidate !== item
-    && (candidate.productId || candidate.id) === (item.productId || item.id)
-    && candidate.size === item.size);
+    && cartItemKey(candidate) === cartItemKey(item));
   if (matchingItem) {
     matchingItem.quantity += item.quantity;
     cart = cart.filter((candidate) => candidate !== item);
@@ -202,7 +229,10 @@ document.querySelector("#checkout-button").addEventListener("click", () => {
     document.querySelector("#cart-items [data-cart-size]").focus();
     return;
   }
-  const lines = cart.map((item) => `• ${item.quantity} x ${item.name} · Talla ${item.size} — ${currency.format(item.quantity * PRICE)}`);
+  const lines = cart.map((item) => {
+    const product = products.find((candidate) => candidate.id === item.productId);
+    return `• ${item.quantity} x ${item.name} · Estampado: ${product.player} · Talla ${item.size} — ${currency.format(item.quantity * PRICE)}`;
+  });
   const total = cart.reduce((sum, item) => sum + item.quantity * PRICE, 0);
   const message = `¡Hola, Rincón Futbolero! Quiero consultar este pedido:\n\n${lines.join("\n")}\n\nTotal: ${currency.format(total)}\n¿Me confirman disponibilidad y tallas?`;
   window.open(`${WHATSAPP_URL}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");

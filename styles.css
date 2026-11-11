@@ -35,6 +35,7 @@ button { color: inherit; }
 .brand-copy strong { font-family: Georgia, serif; font-size: 17px; letter-spacing: .04em; }
 .brand-copy small { color: #92733a; font-size: 9px; letter-spacing: .19em; }
 .main-nav { display: flex; gap: 35px; margin-left: auto; margin-right: auto; color: #555650; font-size: 12px; }
+.nav-label-short { display: none; }
 .main-nav a:hover, .footer-social:hover, .location-link:hover { color: #a18341; }
 .cart-button { height: 40px; display: inline-flex; align-items: center; gap: 9px; padding: 0 11px; border: 0; background: none; cursor: pointer; font-size: 11px; }
 .cart-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -92,6 +93,20 @@ h1 em, h2 em { color: #a88a4e; font-family: "Playfair Display", Georgia, serif; 
 .catalog { padding-top: 77px; padding-bottom: 81px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
 .section-heading h2, .story-copy h2, .inventory h2, .contact-section h2 { margin: 11px 0 0; font-size: clamp(30px, 3.2vw, 42px); line-height: 1.14; letter-spacing: -.045em; }
+.how-to-buy { padding-top: 70px; padding-bottom: 75px; }
+.how-to-buy-heading > p { max-width: 290px; margin: 0 0 4px; color: #6f6f69; font-size: 11px; line-height: 1.8; }
+.buy-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 30px; }
+.buy-step { min-height: 126px; display: flex; gap: 14px; padding: 21px 18px; border: 1px solid var(--line); background: #fff; }
+.buy-step-number { color: #a88b51; font-family: "Playfair Display", Georgia, serif; font-size: 25px; line-height: 1; }
+.buy-step h3 { margin: 2px 0 7px; font-size: 12px; }
+.buy-step p { margin: 0; color: #77766f; font-size: 10px; line-height: 1.7; }
+.payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; margin-top: 18px; padding: 20px 22px; background: #303a31; color: #fff; }
+.payment-intro { display: flex; align-items: center; gap: 13px; }
+.payment-icon { width: 39px; height: 39px; flex: 0 0 39px; display: grid; place-items: center; border: 1px solid rgba(230,211,158,.6); border-radius: 50%; color: #e6d39e; font-size: 19px; font-weight: 600; }
+.payment-intro strong, .payment-note strong { font-size: 11px; }
+.payment-intro p { margin: 5px 0 0; color: #e1e1da; font-size: 10px; line-height: 1.6; }
+.payment-note { display: grid; gap: 5px; padding-left: 20px; border-left: 1px solid rgba(255,255,255,.2); }
+.payment-note span { color: #e1e1da; font-size: 10px; line-height: 1.6; }
 .search-box { width: 230px; height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid #e4e0d6; border-radius: 2px; background: #fff; color: #9c9b95; }
 .search-box span { font-size: 19px; line-height: 1; }
 .search-box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 10px; }
@@ -113,6 +128,8 @@ h1 em, h2 em { color: #a88a4e; font-family: "Playfair Display", Georgia, serif; 
 .product-team { color: #9a814a; font-size: 8px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
 .product-info h3 { margin: 5px 0 0; font-size: 11px; line-height: 1.45; }
 .product-price { margin-top: 2px; font-size: 13px; white-space: nowrap; }
+.product-player-name { margin: -5px 0 0; color: #7d786b; font-size: 8px; letter-spacing: .04em; }
+.product-player-name strong { color: #494943; font-weight: 600; }
 .product-order { display: flex; align-items: end; gap: 8px; }
 .product-size-picker { min-width: 0; flex: 1; display: grid; gap: 4px; color: #7d786b; font-size: 7px; font-weight: 700; letter-spacing: .1em; }
 .product-size-picker select, .cart-size-picker select { width: 100%; min-width: 0; height: 34px; padding: 0 8px; border: 1px solid #e6e2d9; border-radius: 2px; outline-color: #bca56f; color: #494943; background: #fff; font-size: 9px; }
@@ -236,8 +253,10 @@ body.image-modal-open { overflow: hidden; }
   .brand img { width: 40px; height: 40px; }
   .brand-copy strong { font-size: 14px; }
   .brand-copy small { font-size: 8px; }
-  .main-nav { gap: 12px; margin: 0; }
-  .main-nav a { font-size: 9px; }
+  .main-nav { gap: 8px; margin: 0; }
+  .main-nav a { font-size: 8px; white-space: nowrap; }
+  .nav-label-full { display: none; }
+  .nav-label-short { display: inline; }
   .cart-button { position: relative; width: 38px; justify-content: center; padding: 0; }
   .cart-button > span:not(.cart-count) { display: none; }
   .cart-count { position: absolute; top: 2px; right: 0; min-width: 17px; height: 17px; border: 2px solid white; font-size: 8px; }
@@ -260,8 +279,14 @@ body.image-modal-open { overflow: hidden; }
   .benefits small { font-size: 8px; }
   .section-wrap { padding-right: 6%; padding-left: 6%; }
   .catalog { padding-top: 53px; padding-bottom: 54px; }
+  .how-to-buy { padding-top: 48px; padding-bottom: 52px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
   .section-heading h2, .story-copy h2, .inventory h2 { font-size: 34px; }
+  .how-to-buy-heading > p { margin: 0; }
+  .buy-steps { grid-template-columns: 1fr; gap: 10px; margin-top: 21px; }
+  .buy-step { min-height: 0; padding: 16px; }
+  .payment-options { grid-template-columns: 1fr; gap: 15px; margin-top: 12px; padding: 17px; }
+  .payment-note { padding: 13px 0 0; border-top: 1px solid rgba(255,255,255,.2); border-left: 0; }
   .search-box { width: 100%; }
   .catalog-toolbar { align-items: flex-start; flex-direction: column; margin: 20px 0 15px; }
   .filter-list { gap: 6px; }
